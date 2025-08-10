@@ -36,8 +36,9 @@
         
         #post-grid {
             display: grid;
-            /* *** FIX #1: Reduced gap for less space around ads *** */
-            gap: 10px; 
+            /* *** FIX #1: Only horizontal gap, vertical gap is handled by items *** */
+            column-gap: 10px;
+            row-gap: 15px; /* Added a slightly larger row gap for clear separation */
             grid-template-columns: repeat(2, 1fr);
         }
         @media (min-width: 768px) {
@@ -64,6 +65,7 @@
         
         .ad-container {
             grid-column: 1 / -1; 
+            /* *** FIX #2: Removed margin, as gap now handles spacing *** */
             margin: 0; 
             display: flex;
             justify-content: center;
@@ -106,6 +108,50 @@
                     postLink.href = post.targetUrl;
                     postLink.className = 'post-item';
                     postLink.target = '_blank';
+                    postLink.setAttribute('data-title', post.title.toLowerCase());
+                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
+                    grid.appendChild(postLink);
+                    
+                    if (grid.querySelectorAll('.post-item').length % ITEMS_BEFORE_AD === 0) {
+                        const adContainer = document.createElement('div');
+                        adContainer.className = 'ad-container';
+                        const iframe = document.createElement('iframe');
+                        iframe.scrolling = 'no';
+                        iframe.srcdoc = adHtmlContent;
+                        adContainer.appendChild(iframe);
+                        grid.appendChild(adContainer);
+                    }
+                });
+            }
+
+            try {
+                const response = await fetch('data/posts.txt');
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt. Check if the file exists and the path is correct.`);
+                const textData = await response.text();
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                if (lines.length === 0) throw new Error("posts.txt is empty or not found.");
+
+                lines.forEach(line => {
+                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
+                    if (parts.length === 3) {
+                        allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
+                    }
+                });
+                renderPosts(allPosts);
+            } catch (error) {
+                console.error('Final Error:', error);
+                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
+            }
+
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                renderPosts(filteredPosts);
+            });
+        });
+    </script>
+</body>
+</html>                    postLink.target = '_blank';
                     postLink.setAttribute('data-title', post.title.toLowerCase());
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
