@@ -45,10 +45,12 @@
         .container {
             padding: 20px;
         }
-        #post-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+        /* *** CSS CHANGE HERE FOR NEW LAYOUT *** */
+        #post-container {
+            display: flex;
+            flex-direction: column; /* Stacks items vertically */
+            align-items: center; /* Centers items horizontally */
+            gap: 25px; /* Adds space between items and ads */
         }
         .post-item {
             position: relative;
@@ -59,10 +61,12 @@
             text-decoration: none;
             color: var(--text-color);
             transition: transform 0.2s ease;
+            width: 100%; /* Make post item take full width */
+            max-width: 600px; /* Limit max width for large screens */
             aspect-ratio: 16 / 9;
         }
         .post-item:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
         .post-item img {
             width: 100%;
@@ -92,20 +96,121 @@
             fill: #fff;
         }
         .ad-container {
-            grid-column: 1 / -1;
-            margin: 20px 0;
-            text-align: center;
-            background-color: var(--secondary-bg);
-            padding: 10px;
-            border-radius: 8px;
-            /* *** CSS CHANGE HERE *** */
-            min-height: 60px; /* Changed from 250px to match the new ad height */
+            width: 100%;
+            max-width: 468px; /* Match the ad width */
+            min-height: 60px; /* Match the ad height */
             display: flex;
             justify-content: center;
             align-items: center;
         }
         footer {
             text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>My Collection</h1>
+        <input type="text" id="search-box" placeholder="Search by title...">
+    </header>
+
+    <main class="container">
+        <div id="post-container">
+            <!-- Posts and ads will be loaded here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('post-container');
+            const searchBox = document.getElementById('search-box');
+            let allPosts = [];
+
+            // Function to create a unique ad instance
+            function createAdInstance() {
+                const adContainer = document.createElement('div');
+                adContainer.className = 'ad-container';
+
+                // We need a unique ID for each ad's options to be targeted
+                const uniqueId = `ad_${Math.random().toString(36).substr(2, 9)}`;
+                
+                const scriptWithOptions = document.createElement('script');
+                scriptWithOptions.type = 'text/javascript';
+                scriptWithOptions.innerHTML = `
+                    var atOptions_${uniqueId} = {
+                        'key' : '6c3f0a76635c91273ae780660ad7b0f4',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                `;
+                
+                const scriptToInvoke = document.createElement('script');
+                scriptToInvoke.type = 'text/javascript';
+                
+                // This is the magic: we tell the script which options to use
+                scriptToInvoke.innerHTML = `
+                    document.write('<scr' + 'ipt type="text/javascript" src="//retortmansion.com/invoke.js?ws=' + uniqueId + '"></scr' + 'ipt>');
+                `;
+
+                adContainer.appendChild(scriptWithOptions);
+                adContainer.appendChild(scriptToInvoke);
+                
+                return adContainer;
+            }
+
+            function renderPosts(postsToRender) {
+                container.innerHTML = '';
+                postsToRender.forEach(post => {
+                    // Create and append the post item
+                    const postLink = document.createElement('a');
+                    postLink.href = post.targetUrl;
+                    postLink.className = 'post-item';
+                    postLink.target = '_blank';
+                    postLink.setAttribute('data-title', post.title.toLowerCase());
+                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
+                    container.appendChild(postLink);
+
+                    // *** AD CHANGE HERE: Create and append an ad right after each post ***
+                    const ad = createAdInstance();
+                    container.appendChild(ad);
+                });
+            }
+
+            try {
+                const response = await fetch('data/posts.txt');
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
+                const textData = await response.text();
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                lines.forEach(line => {
+                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
+                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
+                });
+                renderPosts(allPosts);
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
+            }
+
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                renderPosts(filteredPosts);
+            });
+        });
+    </script>
+</body>
+</html>            text-align: center;
             padding: 20px;
             margin-top: 40px;
             border-top: 1px solid #333;
