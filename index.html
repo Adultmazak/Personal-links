@@ -12,31 +12,24 @@
             --accent-color: #bb86fc;
             --header-bg: #1f1f1f;
         }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--primary-bg); color: var(--text-color); cursor: none; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--primary-bg); color: var(--text-color); }
         header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
         header h1 { margin: 0; font-size: 1.5em; color: var(--accent-color); }
         #search-box { padding: 8px 12px; border-radius: 20px; border: 1px solid #555; background-color: #333; color: var(--text-color); width: 200px; }
-        .container { padding: 10px; }
+        .container { padding: 20px; }
         
-        /* *** THE FINAL RESPONSIVE GRID *** */
+        /* *** RESPONSIVE GRID LAYOUT *** */
         #post-grid {
             display: grid;
             gap: 15px;
-            /* Mobile: 2 columns */
+            /* Mobile First: 2 columns by default */
             grid-template-columns: repeat(2, 1fr);
         }
-        /* Desktop: 4 columns */
+        /* Desktop: 4 columns for screens wider than 768px */
         @media (min-width: 768px) {
             #post-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
-        }
-
-        /* Wrapper for each post + ad pair */
-        .item-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 10px; /* Space between post and its ad */
         }
 
         .post-item {
@@ -53,18 +46,21 @@
         .post-item:hover { transform: scale(1.05); }
         .post-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); display: flex; justify-content: center; align-items: center; opacity: 1; }
-        .play-overlay svg { width: 40px; height: 40px; fill: #fff; }
+        .play-overlay svg { width: 50px; height: 50px; fill: #fff; }
         
         .ad-container {
+            /* This makes the ad container span all columns of the grid */
+            grid-column: 1 / -1; 
+            margin: 10px 0;
+            text-align: center;
+            min-height: 60px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 60px;
         }
         .ad-container iframe {
-            max-width: 100%;
-            border: 0;
-            display: block;
+            /* *** RESPONSIVE IFRAME *** */
+            max-width: 100%; /* This ensures the ad never overflows its container */
         }
         
         footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9em; }
@@ -79,6 +75,11 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
+            // *** AD PLACEMENT LOGIC ***
+            // We'll insert an ad after every 4 posts.
+            // This works perfectly for the 4-column desktop layout.
+            // On mobile, it will appear after 2 rows, which is a clean experience.
+            const ITEMS_BEFORE_AD = 4; 
             let allPosts = [];
 
             const adHtmlContent = `
@@ -92,20 +93,57 @@
 
             function renderPosts(postsToRender) {
                 grid.innerHTML = '';
+                let postCounter = 0;
                 postsToRender.forEach(post => {
-                    // 1. Create a wrapper for each item (post + ad)
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'item-wrapper';
-
-                    // 2. Create the post link
                     const postLink = document.createElement('a');
                     postLink.href = post.targetUrl;
                     postLink.className = 'post-item';
                     postLink.target = '_blank';
                     postLink.setAttribute('data-title', post.title.toLowerCase());
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
-                    
-                    // 3. Create the ad container
+                    grid.appendChild(postLink);
+                    postCounter++;
+
+                    // Check if it's time to insert an ad
+                    if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
+                        const adContainer = document.createElement('div');
+                        adContainer.className = 'ad-container';
+                        const iframe = document.createElement('iframe');
+                        iframe.setAttribute('width', '468');
+                        iframe.setAttribute('height', '60');
+                        iframe.setAttribute('scrolling', 'no');
+                        iframe.style.border = '0';
+                        iframe.srcdoc = adHtmlContent;
+                        adContainer.appendChild(iframe);
+                        grid.appendChild(adContainer);
+                    }
+                });
+            }
+
+            try {
+                const response = await fetch('data/posts.txt');
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
+                const textData = await response.text();
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                lines.forEach(line => {
+                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
+                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
+                });
+                renderPosts(allPosts);
+            } catch (error) {
+                console.error('Error:', error);
+                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
+            }
+
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                renderPosts(filteredPosts);
+            });
+        });
+    </script>
+</body>
+</html>                    // 3. Create the ad container
                     const adContainer = document.createElement('div');
                     adContainer.className = 'ad-container';
                     const iframe = document.createElement('iframe');
