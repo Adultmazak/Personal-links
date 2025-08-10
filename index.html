@@ -5,48 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Awesome Collection</title>
     <style>
-        :root { --primary-bg: #121212; --secondary-bg: #1e1e1e; --text-color: #e0e0e0; --accent-color: #bb86fc; --header-bg: #1f1f1f; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--primary-bg); color: var(--text-color); }
-        header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
-        header h1 { margin: 0; font-size: 1.5em; color: var(--accent-color); }
-        #search-box { padding: 8px 12px; border-radius: 20px; border: 1px solid #555; background-color: #333; color: var(--text-color); width: 250px; }
-        .container { padding: 20px; }
-        #post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .post-item { position: relative; display: block; background-color: var(--secondary-bg); border-radius: 8px; overflow: hidden; text-decoration: none; color: var(--text-color); transition: transform 0.2s ease; aspect-ratio: 16 / 9; }
-        .post-item:hover { transform: scale(1.05); }
-        .post-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s ease; }
-        .post-item:hover .play-overlay { opacity: 1; }
-        .play-overlay svg { width: 50px; height: 50px; fill: #fff; }
-        .ad-container { grid-column: 1 / -1; margin: 20px 0; text-align: center; background-color: var(--secondary-bg); padding: 10px; border-radius: 8px; min-height: 250px; display: flex; justify-content: center; align-items: center; }
-        footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9em; }
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #bb86fc;
+            --header-bg: #1f1f1f;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: var(--accent-color);
+        }
+        #search-box {
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: var(--text-color);
+            width: 250px;
+        }
+        .container {
+            padding: 20px;
+        }
+        #post-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .post-item {
+            position: relative;
+            display: block;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: transform 0.2s ease;
+            aspect-ratio: 16 / 9;
+        }
+        .post-item:hover {
+            transform: scale(1.05);
+        }
+        .post-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .post-item:hover .play-overlay {
+            opacity: 1;
+        }
+        .play-overlay svg {
+            width: 50px;
+            height: 50px;
+            fill: #fff;
+        }
+        .ad-container {
+            grid-column: 1 / -1;
+            margin: 20px 0;
+            text-align: center;
+            background-color: var(--secondary-bg);
+            padding: 10px;
+            border-radius: 8px;
+            /* *** CSS CHANGE HERE *** */
+            min-height: 60px; /* Changed from 250px to match the new ad height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
-    <header><h1>My Collection</h1><input type="text" id="search-box" placeholder="Search..."></header>
-    <main class="container"><div id="post-grid"></div></main>
-    <footer><p>&copy; 2024 All Rights Reserved.</p></footer>
-    <template id="ad-template">
+
+    <header>
+        <h1>My Collection</h1>
+        <input type="text" id="search-box" placeholder="Search by title...">
+    </header>
+
+    <main class="container">
+        <div id="post-grid">
+            <!-- Posts and ads will be loaded here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 All Rights Reserved.</p>
+    </footer>
+
+    <!-- This template will be used for ads -->
+    <template id="ad-template-base">
+        <!-- *** AD CODE CHANGE HERE *** -->
         <script type="text/javascript">
-            atOptions = {'key' : '51f2451703026956dcf91f1cd5ead657','format' : 'iframe','height' : 250,'width' : 300,'params' : {}};
+            atOptions = {
+                'key' : '6c3f0a76635c91273ae780660ad7b0f4',
+                'format' : 'iframe',
+                'height' : 60,
+                'width' : 468,
+                'params' : {}
+            };
         </script>
-        <script type="text/javascript" src="//retortmansion.com/51f2451703026956dcf91f1cd5ead657/invoke.js"></script>
+        <!-- The script source will be added dynamically -->
     </template>
+
+
     <script>
-        // *** NEW FUNCTION TO FIX SCRIPT EXECUTION ***
         function executeScriptsInElement(element) {
             const scripts = element.querySelectorAll('script');
             scripts.forEach(oldScript => {
                 const newScript = document.createElement('script');
-                // Copy all attributes from the old script to the new one
-                Array.from(oldScript.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value);
-                });
-                // Copy the content if it's an inline script
-                if (oldScript.innerHTML) {
-                    newScript.innerHTML = oldScript.innerHTML;
-                }
-                // Replace the old script with the new one to trigger execution
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                if (oldScript.innerHTML) newScript.innerHTML = oldScript.innerHTML;
                 oldScript.parentNode.replaceChild(newScript, oldScript);
             });
         }
@@ -54,7 +160,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            const adTemplate = document.getElementById('ad-template');
+            const adTemplateBase = document.getElementById('ad-template-base');
             const ITEMS_BEFORE_AD = 4;
             let allPosts = [];
 
@@ -70,12 +176,23 @@
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
                     postCounter++;
+
                     if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
                         const adContainer = document.createElement('div');
                         adContainer.className = 'ad-container';
-                        adContainer.innerHTML = adTemplate.innerHTML;
+                        
+                        const adInstance = document.createElement('div');
+                        adInstance.innerHTML = adTemplateBase.innerHTML;
+                        
+                        const adScript = document.createElement('script');
+                        adScript.type = 'text/javascript';
+                        // *** AD CODE CHANGE HERE ***
+                        adScript.src = `//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js`;
+                        
+                        adInstance.appendChild(adScript);
+                        adContainer.appendChild(adInstance);
                         grid.appendChild(adContainer);
-                        // ** USE THE NEW FUNCTION TO EXECUTE THE SCRIPT **
+                        
                         executeScriptsInElement(adContainer);
                     }
                 });
@@ -83,15 +200,12 @@
 
             try {
                 const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt. Status: ${response.status}`);
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
                 const textData = await response.text();
                 const lines = textData.split('\n').filter(line => line.trim() !== '');
                 lines.forEach(line => {
-                    const cleanedLine = line.trim().slice(1, -1);
-                    const parts = cleanedLine.split(',').map(part => part.trim());
-                    if (parts.length === 3) {
-                        allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                    }
+                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
+                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
                 });
                 renderPosts(allPosts);
             } catch (error) {
