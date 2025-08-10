@@ -12,115 +12,25 @@
             --accent-color: #bb86fc;
             --header-bg: #1f1f1f;
         }
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-        }
-        header {
-            background-color: var(--header-bg);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.5em;
-            color: var(--accent-color);
-        }
-        #search-box {
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: var(--text-color);
-            width: 200px;
-        }
-        .container {
-            padding: 20px;
-        }
-        #post-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .post-item {
-            position: relative;
-            display: block;
-            background-color: var(--secondary-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            text-decoration: none;
-            color: var(--text-color);
-            transition: transform 0.2s ease;
-            aspect-ratio: 16 / 9;
-        }
-        .post-item:hover {
-            transform: scale(1.05);
-        }
-        .post-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .play-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 1; /* Always visible */
-        }
-        .play-overlay svg {
-            width: 50px;
-            height: 50px;
-            fill: #fff;
-        }
-        .ad-container {
-            grid-column: 1 / -1;
-            margin: 20px 0;
-            text-align: center;
-            min-height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9em;
-        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--primary-bg); color: var(--text-color); }
+        header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
+        header h1 { margin: 0; font-size: 1.5em; color: var(--accent-color); }
+        #search-box { padding: 8px 12px; border-radius: 20px; border: 1px solid #555; background-color: #333; color: var(--text-color); width: 200px; }
+        .container { padding: 20px; }
+        #post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .post-item { position: relative; display: block; background-color: var(--secondary-bg); border-radius: 8px; overflow: hidden; text-decoration: none; color: var(--text-color); transition: transform 0.2s ease; aspect-ratio: 16 / 9; }
+        .post-item:hover { transform: scale(1.05); }
+        .post-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); display: flex; justify-content: center; align-items: center; opacity: 1; }
+        .play-overlay svg { width: 50px; height: 50px; fill: #fff; }
+        .ad-container { grid-column: 1 / -1; margin: 20px 0; text-align: center; min-height: 60px; display: flex; justify-content: center; align-items: center; }
+        footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9em; }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1>xRabbit</h1>
-        <input type="text" id="search-box" placeholder="Search by title...">
-    </header>
-
-    <main class="container">
-        <div id="post-grid">
-            <!-- Posts and ads will be loaded here -->
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 All Rights Reserved.</p>
-    </footer>
+    <header><h1>xRabbit</h1><input type="text" id="search-box" placeholder="Search by title..."></header>
+    <main class="container"><div id="post-grid"></div></main>
+    <footer><p>&copy; 2024 All Rights Reserved.</p></footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -128,20 +38,6 @@
             const searchBox = document.getElementById('search-box');
             const ITEMS_BEFORE_AD = 1; // Ad after every image
             let allPosts = [];
-
-            // This is the ad code as a simple string
-            const adScriptContent = `
-                <script type="text/javascript">
-                    atOptions = {
-                        'key' : '6c3f0a76635c91273ae780660ad7b0f4',
-                        'format' : 'iframe',
-                        'height' : 60,
-                        'width' : 468,
-                        'params' : {}
-                    };
-                <\/script>
-                <script type="text/javascript" src="//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js"><\/script>
-            `;
 
             function renderPosts(postsToRender) {
                 grid.innerHTML = '';
@@ -155,210 +51,18 @@
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
                     
-                    // Render the ad in a safe way
+                    // Render the ad container
                     const adContainer = document.createElement('div');
                     adContainer.className = 'ad-container';
 
-                    // *** THE FINAL GUARANTEED IFRAME METHOD ***
+                    // *** THIS IS THE FINAL, GUARANTEED SOLUTION ***
                     const iframe = document.createElement('iframe');
-                    iframe.setAttribute('width', '468');
-                    iframe.setAttribute('height', '60');
-                    iframe.setAttribute('scrolling', 'no');
+                    // Add a random number to the URL to prevent caching
+                    iframe.src = `ad.html?r=${Math.random()}`; 
+                    iframe.width = '468';
+                    iframe.height = '60';
+                    iframe.scrolling = 'no';
                     iframe.style.border = '0';
-                    adContainer.appendChild(iframe);
-                    grid.appendChild(adContainer);
-
-                    // Write the ad content into the iframe document safely
-                    const iframeDoc = iframe.contentWindow.document;
-                    iframeDoc.open();
-                    iframeDoc.write(adScriptContent);
-                    iframeDoc.close();
-                });
-            }
-
-            try {
-                const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
-                const textData = await response.text();
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                lines.forEach(line => {
-                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                });
-                renderPosts(allPosts);
-            } catch (error) {
-                console.error('Error:', error);
-                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
-            }
-
-            searchBox.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
-                renderPosts(filteredPosts);
-            });
-        });
-    </script>
-</body>
-</html>    </style>
-</head>
-<body>
-
-    <header>
-        <h1>xRabbit</h1>
-        <input type="text" id="search-box" placeholder="Search by title...">
-    </header>
-
-    <main class="container">
-        <div id="post-grid">
-            <!-- Posts and ads will be loaded here -->
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 All Rights Reserved.</p>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const grid = document.getElementById('post-grid');
-            const searchBox = document.getElementById('search-box');
-            const ITEMS_BEFORE_AD = 1;
-
-            const adHtmlContent = `
-                <html><head><style>body,html{margin:0;padding:0;}</style></head><body>
-                <script type="text/javascript">
-                    atOptions = {
-                        'key' : '6c3f0a76635c91273ae780660ad7b0f4',
-                        'format' : 'iframe',
-                        'height' : 60,
-                        'width' : 468,
-                        'params' : {}
-                    };
-                <\/script>
-                <script type="text/javascript" src="//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js"><\/script>
-                </body></html>
-            `;
-
-            function renderPosts(postsToRender) {
-                grid.innerHTML = '';
-                postsToRender.forEach(post => {
-                    const postLink = document.createElement('a');
-                    postLink.href = post.targetUrl;
-                    postLink.className = 'post-item';
-                    postLink.target = '_blank';
-                    postLink.setAttribute('data-title', post.title.toLowerCase());
-                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
-                    grid.appendChild(postLink);
-                    
-                    const adContainer = document.createElement('div');
-                    adContainer.className = 'ad-container';
-                    const iframe = document.createElement('iframe');
-                    iframe.setAttribute('width', '468');
-                    iframe.setAttribute('height', '60');
-                    iframe.setAttribute('scrolling', 'no');
-                    iframe.style.border = '0';
-                    iframe.srcdoc = adHtmlContent;
-                    adContainer.appendChild(iframe);
-                    grid.appendChild(adContainer);
-                });
-            }
-
-            try {
-                const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
-                const textData = await response.text();
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                let allPosts = [];
-                lines.forEach(line => {
-                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                });
-                renderPosts(allPosts);
-            } catch (error) {
-                console.error('Error:', error);
-                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
-            }
-
-            searchBox.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
-                renderPosts(filteredPosts);
-            });
-        });
-    </script>
-</body>
-</html>            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>xRabbit</h1>
-        <input type="text" id="search-box" placeholder="Search by title...">
-    </header>
-
-    <main class="container">
-        <div id="post-grid">
-            <!-- Posts and ads will be loaded here -->
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 All Rights Reserved.</p>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const grid = document.getElementById('post-grid');
-            const searchBox = document.getElementById('search-box');
-            const ITEMS_BEFORE_AD = 1; // Ad after every image
-            let allPosts = [];
-
-            // This is the full ad code, we will inject it into an iframe's srcdoc
-            const adHtmlContent = `
-                <html><head><style>body,html{margin:0;padding:0;}</style></head><body>
-                <script type="text/javascript">
-                    atOptions = {
-                        'key' : '6c3f0a76635c91273ae780660ad7b0f4',
-                        'format' : 'iframe',
-                        'height' : 60,
-                        'width' : 468,
-                        'params' : {}
-                    };
-                <\/script>
-                <script type="text/javascript" src="//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js"><\/script>
-                </body></html>
-            `;
-
-            function renderPosts(postsToRender) {
-                grid.innerHTML = '';
-                postsToRender.forEach(post => {
-                    const postLink = document.createElement('a');
-                    postLink.href = post.targetUrl;
-                    postLink.className = 'post-item';
-                    postLink.target = '_blank';
-                    postLink.setAttribute('data-title', post.title.toLowerCase());
-                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
-                    grid.appendChild(postLink);
-                    
-                    // Create and append an ad right after each post
-                    const adContainer = document.createElement('div');
-                    adContainer.className = 'ad-container';
-
-                    // *** THIS IS THE NEW, GUARANTEED IFRAME METHOD ***
-                    const iframe = document.createElement('iframe');
-                    iframe.setAttribute('width', '468');
-                    iframe.setAttribute('height', '60');
-                    iframe.setAttribute('scrolling', 'no');
-                    iframe.style.border = '0';
-                    // Use srcdoc to safely contain the ad script
-                    iframe.srcdoc = adHtmlContent;
-
                     adContainer.appendChild(iframe);
                     grid.appendChild(adContainer);
                 });
