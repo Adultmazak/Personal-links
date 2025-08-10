@@ -16,16 +16,15 @@
         header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
         header h1 { margin: 0; font-size: 1.5em; color: var(--accent-color); }
         #search-box { padding: 8px 12px; border-radius: 20px; border: 1px solid #555; background-color: #333; color: var(--text-color); width: 200px; }
-        .container { padding: 20px; }
+        .container { padding: 10px; }
         
-        /* *** RESPONSIVE GRID LAYOUT *** */
         #post-grid {
             display: grid;
             gap: 15px;
-            /* Mobile First: 2 columns by default */
+            /* Mobile: 2 columns */
             grid-template-columns: repeat(2, 1fr);
         }
-        /* Desktop: 4 columns for screens wider than 768px */
+        /* Desktop: 4 columns */
         @media (min-width: 768px) {
             #post-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -46,21 +45,19 @@
         .post-item:hover { transform: scale(1.05); }
         .post-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); display: flex; justify-content: center; align-items: center; opacity: 1; }
-        .play-overlay svg { width: 50px; height: 50px; fill: #fff; }
+        .play-overlay svg { width: 40px; height: 40px; fill: #fff; }
         
         .ad-container {
-            /* This makes the ad container span all columns of the grid */
             grid-column: 1 / -1; 
             margin: 10px 0;
-            text-align: center;
-            min-height: 60px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+        /* *** CSS CHANGE FOR RESPONSIVE AD *** */
         .ad-container iframe {
-            /* *** RESPONSIVE IFRAME *** */
-            max-width: 100%; /* This ensures the ad never overflows its container */
+            max-width: 100%; /* This is the magic line for responsive ads */
+            border: 0;
         }
         
         footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9em; }
@@ -75,11 +72,11 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            // *** AD PLACEMENT LOGIC ***
-            // We'll insert an ad after every 4 posts.
-            // This works perfectly for the 4-column desktop layout.
-            // On mobile, it will appear after 2 rows, which is a clean experience.
-            const ITEMS_BEFORE_AD = 4; 
+            // *** JAVASCRIPT CHANGE FOR AD PLACEMENT ***
+            // Ad after every 2 images now.
+            // On mobile, this means after every row.
+            // On desktop, this means after every 2nd post in a row.
+            const ITEMS_BEFORE_AD = 2; 
             let allPosts = [];
 
             const adHtmlContent = `
@@ -104,15 +101,13 @@
                     grid.appendChild(postLink);
                     postCounter++;
 
-                    // Check if it's time to insert an ad
                     if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
                         const adContainer = document.createElement('div');
                         adContainer.className = 'ad-container';
                         const iframe = document.createElement('iframe');
-                        iframe.setAttribute('width', '468');
-                        iframe.setAttribute('height', '60');
-                        iframe.setAttribute('scrolling', 'no');
-                        iframe.style.border = '0';
+                        // *** JAVASCRIPT CHANGE FOR RESPONSIVE AD ***
+                        // Removed fixed width/height attributes to let CSS control it
+                        iframe.scrolling = 'no';
                         iframe.srcdoc = adHtmlContent;
                         adContainer.appendChild(iframe);
                         grid.appendChild(adContainer);
