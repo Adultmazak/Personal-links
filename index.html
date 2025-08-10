@@ -130,228 +130,27 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            const ITEMS_BEFORE_AD = 1; // Change to 1 for ad after every image
+            const ITEMS_BEFORE_AD = 1; // Ad after every image
             let allPosts = [];
 
-            function renderPosts(postsToRender) {
-                grid.innerHTML = '';
-                let postCounter = 0;
-                postsToRender.forEach(post => {
-                    // Create and append the post item
-                    const postLink = document.createElement('a');
-                    postLink.href = post.targetUrl;
-                    postLink.className = 'post-item';
-                    postLink.target = '_blank';
-                    postLink.setAttribute('data-title', post.title.toLowerCase());
-                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
-                    grid.appendChild(postLink);
-                    postCounter++;
-
-                    // Check if it's time to insert an ad
-                    if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
-                        const adContainer = document.createElement('div');
-                        adContainer.className = 'ad-container';
-                        // *** THIS IS THE NEW IFRAME METHOD ***
-                        adContainer.innerHTML = `<iframe src="ad.html" width="468" height="60" scrolling="no" style="border:0;"></iframe>`;
-                        grid.appendChild(adContainer);
-                    }
-                });
-            }
-
-            try {
-                const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
-                const textData = await response.text();
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                lines.forEach(line => {
-                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                });
-                renderPosts(allPosts);
-            } catch (error) {
-                console.error('Error:', error);
-                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
-            }
-
-            searchBox.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
-                renderPosts(filteredPosts);
-            });
-        });
-    </script>
-</body>
-</html>            align-items: center;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>My Collection</h1>
-        <input type="text" id="search-box" placeholder="Search by title...">
-    </header>
-
-    <main class="container">
-        <div id="post-container">
-            <!-- Posts and ads will be loaded here -->
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 All Rights Reserved.</p>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('post-container');
-            const searchBox = document.getElementById('search-box');
-            let allPosts = [];
-
-            // Function to create a unique ad instance
-            function createAdInstance() {
-                const adContainer = document.createElement('div');
-                adContainer.className = 'ad-container';
-
-                // We need a unique ID for each ad's options to be targeted
-                const uniqueId = `ad_${Math.random().toString(36).substr(2, 9)}`;
-                
-                const scriptWithOptions = document.createElement('script');
-                scriptWithOptions.type = 'text/javascript';
-                scriptWithOptions.innerHTML = `
-                    var atOptions_${uniqueId} = {
+            // This is the full ad code, we will inject it into an iframe's srcdoc
+            const adHtmlContent = `
+                <html><head><style>body,html{margin:0;padding:0;}</style></head><body>
+                <script type="text/javascript">
+                    atOptions = {
                         'key' : '6c3f0a76635c91273ae780660ad7b0f4',
                         'format' : 'iframe',
                         'height' : 60,
                         'width' : 468,
                         'params' : {}
                     };
-                `;
-                
-                const scriptToInvoke = document.createElement('script');
-                scriptToInvoke.type = 'text/javascript';
-                
-                // This is the magic: we tell the script which options to use
-                scriptToInvoke.innerHTML = `
-                    document.write('<scr' + 'ipt type="text/javascript" src="//retortmansion.com/invoke.js?ws=' + uniqueId + '"></scr' + 'ipt>');
-                `;
-
-                adContainer.appendChild(scriptWithOptions);
-                adContainer.appendChild(scriptToInvoke);
-                
-                return adContainer;
-            }
-
-            function renderPosts(postsToRender) {
-                container.innerHTML = '';
-                postsToRender.forEach(post => {
-                    // Create and append the post item
-                    const postLink = document.createElement('a');
-                    postLink.href = post.targetUrl;
-                    postLink.className = 'post-item';
-                    postLink.target = '_blank';
-                    postLink.setAttribute('data-title', post.title.toLowerCase());
-                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
-                    container.appendChild(postLink);
-
-                    // *** AD CHANGE HERE: Create and append an ad right after each post ***
-                    const ad = createAdInstance();
-                    container.appendChild(ad);
-                });
-            }
-
-            try {
-                const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
-                const textData = await response.text();
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                lines.forEach(line => {
-                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                });
-                renderPosts(allPosts);
-            } catch (error) {
-                console.error('Error:', error);
-                container.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
-            }
-
-            searchBox.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
-                renderPosts(filteredPosts);
-            });
-        });
-    </script>
-</body>
-</html>            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>My Collection</h1>
-        <input type="text" id="search-box" placeholder="Search by title...">
-    </header>
-
-    <main class="container">
-        <div id="post-grid">
-            <!-- Posts and ads will be loaded here -->
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 All Rights Reserved.</p>
-    </footer>
-
-    <!-- This template will be used for ads -->
-    <template id="ad-template-base">
-        <!-- *** AD CODE CHANGE HERE *** -->
-        <script type="text/javascript">
-            atOptions = {
-                'key' : '6c3f0a76635c91273ae780660ad7b0f4',
-                'format' : 'iframe',
-                'height' : 60,
-                'width' : 468,
-                'params' : {}
-            };
-        </script>
-        <!-- The script source will be added dynamically -->
-    </template>
-
-
-    <script>
-        function executeScriptsInElement(element) {
-            const scripts = element.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                if (oldScript.innerHTML) newScript.innerHTML = oldScript.innerHTML;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const grid = document.getElementById('post-grid');
-            const searchBox = document.getElementById('search-box');
-            const adTemplateBase = document.getElementById('ad-template-base');
-            const ITEMS_BEFORE_AD = 4;
-            let allPosts = [];
+                <\/script>
+                <script type="text/javascript" src="//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js"><\/script>
+                </body></html>
+            `;
 
             function renderPosts(postsToRender) {
                 grid.innerHTML = '';
-                let postCounter = 0;
                 postsToRender.forEach(post => {
                     const postLink = document.createElement('a');
                     postLink.href = post.targetUrl;
@@ -360,26 +159,22 @@
                     postLink.setAttribute('data-title', post.title.toLowerCase());
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
-                    postCounter++;
+                    
+                    // Create and append an ad right after each post
+                    const adContainer = document.createElement('div');
+                    adContainer.className = 'ad-container';
 
-                    if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
-                        const adContainer = document.createElement('div');
-                        adContainer.className = 'ad-container';
-                        
-                        const adInstance = document.createElement('div');
-                        adInstance.innerHTML = adTemplateBase.innerHTML;
-                        
-                        const adScript = document.createElement('script');
-                        adScript.type = 'text/javascript';
-                        // *** AD CODE CHANGE HERE ***
-                        adScript.src = `//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js`;
-                        
-                        adInstance.appendChild(adScript);
-                        adContainer.appendChild(adInstance);
-                        grid.appendChild(adContainer);
-                        
-                        executeScriptsInElement(adContainer);
-                    }
+                    // *** THIS IS THE NEW, GUARANTEED IFRAME METHOD ***
+                    const iframe = document.createElement('iframe');
+                    iframe.setAttribute('width', '468');
+                    iframe.setAttribute('height', '60');
+                    iframe.setAttribute('scrolling', 'no');
+                    iframe.style.border = '0';
+                    // Use srcdoc to safely contain the ad script
+                    iframe.srcdoc = adHtmlContent;
+
+                    adContainer.appendChild(iframe);
+                    grid.appendChild(adContainer);
                 });
             }
 
