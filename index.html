@@ -12,33 +12,15 @@
             --accent-color: #bb86fc;
             --header-bg: #1f1f1f;
         }
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            cursor: none;
-        }
-        header {
-            background-color: var(--header-bg);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--primary-bg); color: var(--text-color); }
+        header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
         header h1 { margin: 0; font-size: 1.5em; color: var(--accent-color); }
         #search-box { padding: 8px 12px; border-radius: 20px; border: 1px solid #555; background-color: #333; color: var(--text-color); width: 200px; }
         .container { padding: 10px; }
         
         #post-grid {
             display: grid;
-            /* *** FIX #1: Only horizontal gap, vertical gap is handled by items *** */
-            column-gap: 10px;
-            row-gap: 15px; /* Added a slightly larger row gap for clear separation */
+            gap: 15px;
             grid-template-columns: repeat(2, 1fr);
         }
         @media (min-width: 768px) {
@@ -64,9 +46,8 @@
         .play-overlay svg { width: 40px; height: 40px; fill: #fff; }
         
         .ad-container {
-            grid-column: 1 / -1; 
-            /* *** FIX #2: Removed margin, as gap now handles spacing *** */
-            margin: 0; 
+            grid-column: 1 / -1;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -89,21 +70,13 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            const ITEMS_BEFORE_AD = 2; 
+            const ITEMS_BEFORE_AD = 2; // Ad after every 2 images
             let allPosts = [];
-
-            const adHtmlContent = `
-                <html><head><style>body,html{margin:0;padding:0;display:flex;justify-content:center;align-items:center;}</style></head><body>
-                <script type="text/javascript">
-                    atOptions = {'key' : '6c3f0a76635c91273ae780660ad7b0f4','format' : 'iframe','height' : 60,'width' : 468,'params' : {}};
-                <\/script>
-                <script type="text/javascript" src="//retortmansion.com/6c3f0a76635c91273ae780660ad7b0f4/invoke.js"><\/script>
-                </body></html>
-            `;
 
             function renderPosts(postsToRender) {
                 grid.innerHTML = '';
                 postsToRender.forEach(post => {
+                    // Render the post
                     const postLink = document.createElement('a');
                     postLink.href = post.targetUrl;
                     postLink.className = 'post-item';
@@ -112,12 +85,19 @@
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
                     
+                    // Render the ad container after the correct number of posts
                     if (grid.querySelectorAll('.post-item').length % ITEMS_BEFORE_AD === 0) {
                         const adContainer = document.createElement('div');
                         adContainer.className = 'ad-container';
+
+                        // *** THIS IS THE FINAL, GUARANTEED SOLUTION ***
                         const iframe = document.createElement('iframe');
+                        // Add a random number to the URL to prevent caching
+                        iframe.src = `ad.html?r=${Math.random()}`; 
+                        iframe.width = '468';
+                        iframe.height = '60';
                         iframe.scrolling = 'no';
-                        iframe.srcdoc = adHtmlContent;
+                        iframe.style.border = '0';
                         adContainer.appendChild(iframe);
                         grid.appendChild(adContainer);
                     }
@@ -126,11 +106,11 @@
 
             try {
                 const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt. Check if the file exists and the path is correct.`);
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
                 const textData = await response.text();
                 const lines = textData.split('\n').filter(line => line.trim() !== '');
-                if (lines.length === 0) throw new Error("posts.txt is empty or not found.");
-
+                if (lines.length === 0) throw new Error("posts.txt is empty.");
+                
                 lines.forEach(line => {
                     const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
                     if (parts.length === 3) {
@@ -140,51 +120,6 @@
                 renderPosts(allPosts);
             } catch (error) {
                 console.error('Final Error:', error);
-                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
-            }
-
-            searchBox.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
-                renderPosts(filteredPosts);
-            });
-        });
-    </script>
-</body>
-</html>                    postLink.target = '_blank';
-                    postLink.setAttribute('data-title', post.title.toLowerCase());
-                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
-                    grid.appendChild(postLink);
-                    
-                    if (grid.querySelectorAll('.post-item').length % ITEMS_BEFORE_AD === 0) {
-                        const adContainer = document.createElement('div');
-                        adContainer.className = 'ad-container';
-                        const iframe = document.createElement('iframe');
-                        iframe.scrolling = 'no';
-                        iframe.srcdoc = adHtmlContent;
-                        adContainer.appendChild(iframe);
-                        grid.appendChild(adContainer);
-                    }
-                });
-            }
-
-            try {
-                const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt. Check if the file exists and the path is correct.`);
-                const textData = await response.text();
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                if (lines.length === 0) throw new Error("posts.txt is empty or not found.");
-
-                lines.forEach(line => {
-                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) {
-                        allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                    }
-                });
-                renderPosts(allPosts);
-            } catch (error) {
-                console.error('Final Error:', error);
-                // *** FIX #2: Changed single quotes to backticks (`) ***
                 grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
             }
 
