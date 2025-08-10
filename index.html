@@ -45,12 +45,10 @@
         .container {
             padding: 20px;
         }
-        /* *** CSS CHANGE HERE FOR NEW LAYOUT *** */
-        #post-container {
-            display: flex;
-            flex-direction: column; /* Stacks items vertically */
-            align-items: center; /* Centers items horizontally */
-            gap: 25px; /* Adds space between items and ads */
+        #post-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
         }
         .post-item {
             position: relative;
@@ -61,12 +59,10 @@
             text-decoration: none;
             color: var(--text-color);
             transition: transform 0.2s ease;
-            width: 100%; /* Make post item take full width */
-            max-width: 600px; /* Limit max width for large screens */
             aspect-ratio: 16 / 9;
         }
         .post-item:hover {
-            transform: scale(1.02);
+            transform: scale(1.05);
         }
         .post-item img {
             width: 100%;
@@ -96,12 +92,96 @@
             fill: #fff;
         }
         .ad-container {
-            width: 100%;
-            max-width: 468px; /* Match the ad width */
-            min-height: 60px; /* Match the ad height */
+            grid-column: 1 / -1;
+            margin: 20px 0;
+            text-align: center;
+            min-height: 60px;
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>My Collection</h1>
+        <input type="text" id="search-box" placeholder="Search by title...">
+    </header>
+
+    <main class="container">
+        <div id="post-grid">
+            <!-- Posts and ads will be loaded here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const grid = document.getElementById('post-grid');
+            const searchBox = document.getElementById('search-box');
+            const ITEMS_BEFORE_AD = 1; // Change to 1 for ad after every image
+            let allPosts = [];
+
+            function renderPosts(postsToRender) {
+                grid.innerHTML = '';
+                let postCounter = 0;
+                postsToRender.forEach(post => {
+                    // Create and append the post item
+                    const postLink = document.createElement('a');
+                    postLink.href = post.targetUrl;
+                    postLink.className = 'post-item';
+                    postLink.target = '_blank';
+                    postLink.setAttribute('data-title', post.title.toLowerCase());
+                    postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
+                    grid.appendChild(postLink);
+                    postCounter++;
+
+                    // Check if it's time to insert an ad
+                    if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
+                        const adContainer = document.createElement('div');
+                        adContainer.className = 'ad-container';
+                        // *** THIS IS THE NEW IFRAME METHOD ***
+                        adContainer.innerHTML = `<iframe src="ad.html" width="468" height="60" scrolling="no" style="border:0;"></iframe>`;
+                        grid.appendChild(adContainer);
+                    }
+                });
+            }
+
+            try {
+                const response = await fetch('data/posts.txt');
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
+                const textData = await response.text();
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                lines.forEach(line => {
+                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
+                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
+                });
+                renderPosts(allPosts);
+            } catch (error) {
+                console.error('Error:', error);
+                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
+            }
+
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                renderPosts(filteredPosts);
+            });
+        });
+    </script>
+</body>
+</html>            align-items: center;
         }
         footer {
             text-align: center;
