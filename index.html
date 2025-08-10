@@ -12,8 +12,25 @@
             --accent-color: #bb86fc;
             --header-bg: #1f1f1f;
         }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--primary-bg); color: var(--text-color); }
-        header { background-color: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            /* *** CSS CHANGE #1: Hide cursor everywhere *** */
+            cursor: none;
+        }
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
         header h1 { margin: 0; font-size: 1.5em; color: var(--accent-color); }
         #search-box { padding: 8px 12px; border-radius: 20px; border: 1px solid #555; background-color: #333; color: var(--text-color); width: 200px; }
         .container { padding: 10px; }
@@ -21,10 +38,8 @@
         #post-grid {
             display: grid;
             gap: 15px;
-            /* Mobile: 2 columns */
             grid-template-columns: repeat(2, 1fr);
         }
-        /* Desktop: 4 columns */
         @media (min-width: 768px) {
             #post-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -49,15 +64,16 @@
         
         .ad-container {
             grid-column: 1 / -1; 
-            margin: 10px 0;
+            /* *** CSS CHANGE #2: Removed margin to eliminate space *** */
+            margin: 0; 
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        /* *** CSS CHANGE FOR RESPONSIVE AD *** */
         .ad-container iframe {
-            max-width: 100%; /* This is the magic line for responsive ads */
+            max-width: 100%;
             border: 0;
+            display: block; /* Helps remove any potential bottom space */
         }
         
         footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9em; }
@@ -72,10 +88,6 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            // *** JAVASCRIPT CHANGE FOR AD PLACEMENT ***
-            // Ad after every 2 images now.
-            // On mobile, this means after every row.
-            // On desktop, this means after every 2nd post in a row.
             const ITEMS_BEFORE_AD = 2; 
             let allPosts = [];
 
@@ -102,6 +114,41 @@
                     postCounter++;
 
                     if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
+                        const adContainer = document.createElement('div');
+                        adContainer.className = 'ad-container';
+                        const iframe = document.createElement('iframe');
+                        iframe.scrolling = 'no';
+                        iframe.srcdoc = adHtmlContent;
+                        adContainer.appendChild(iframe);
+                        grid.appendChild(adContainer);
+                    }
+                });
+            }
+
+            try {
+                const response = await fetch('data/posts.txt');
+                if (!response.ok) throw new Error(`Failed to fetch posts.txt`);
+                const textData = await response.text();
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                lines.forEach(line => {
+                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
+                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
+                });
+                renderPosts(allPosts);
+            } catch (error) {
+                console.error('Error:', error);
+                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
+            }
+
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                renderPosts(filteredPosts);
+            });
+        });
+    </script>
+</body>
+</html>                    if (postCounter > 0 && postCounter % ITEMS_BEFORE_AD === 0) {
                         const adContainer = document.createElement('div');
                         adContainer.className = 'ad-container';
                         const iframe = document.createElement('iframe');
