@@ -70,13 +70,16 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            const ITEMS_BEFORE_AD = 2; // Ad after every 2 images
+            
+            // *** THE ONLY CHANGE NEEDED FOR DESKTOP LAYOUT ***
+            // Change this from 2 to 4
+            const ITEMS_BEFORE_AD = 4; 
+            
             let allPosts = [];
 
             function renderPosts(postsToRender) {
                 grid.innerHTML = '';
                 postsToRender.forEach(post => {
-                    // Render the post
                     const postLink = document.createElement('a');
                     postLink.href = post.targetUrl;
                     postLink.className = 'post-item';
@@ -85,14 +88,10 @@
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
                     
-                    // Render the ad container after the correct number of posts
                     if (grid.querySelectorAll('.post-item').length % ITEMS_BEFORE_AD === 0) {
                         const adContainer = document.createElement('div');
                         adContainer.className = 'ad-container';
-
-                        // *** THIS IS THE FINAL, GUARANTEED SOLUTION ***
                         const iframe = document.createElement('iframe');
-                        // Add a random number to the URL to prevent caching
                         iframe.src = `ad.html?r=${Math.random()}`; 
                         iframe.width = '468';
                         iframe.height = '60';
