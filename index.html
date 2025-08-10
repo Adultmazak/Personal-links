@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Awesome Collection</title>
+    <style>
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #bb86fc;
+            --header-bg: #1f1f1f;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: var(--accent-color);
+        }
+        #search-box {
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: var(--text-color);
+            width: 250px;
+        }
+        .container {
+            padding: 20px;
+        }
+        #post-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .post-item {
+            position: relative;
+            display: block;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: transform 0.2s ease;
+        }
+        .post-item:hover {
+            transform: scale(1.05);
+        }
+        .post-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .post-item:hover .play-overlay {
+            opacity: 1;
+        }
+        .play-overlay svg {
+            width: 50px;
+            height: 50px;
+            fill: #fff;
+        }
+        .ad-container {
+            grid-column: 1 / -1; /* Make ad span full width of the grid */
+            margin: 20px 0;
+            text-align: center;
+            background-color: var(--secondary-bg);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>My Collection</h1>
+        <input type="text" id="search-box" placeholder="Search by title...">
+    </header>
+
+    <main class="container">
+        <div id="post-grid">
+            <!-- Posts and ads will be loaded here by JavaScript -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 All Rights Reserved.</p>
+    </footer>
+
+    <!-- ================= ADSTERRA BANNER AD CODE ================= -->
+    <!-- APNA ADSTERRA BANNER AD KA CODE YAHAN PASTE KAREIN -->
+    <!-- Example: <script type="text/javascript" src="//..."></script> -->
+    <template id="ad-template">
+        <!-- **IMPORTANT**: APNA ADSTERRA BANNER AD KA CODE YAHAN PASTE KAREIN -->
+        
+    </template>
+    <!-- ========================================================== -->
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const grid = document.getElementById('post-grid');
+            const searchBox = document.getElementById('search-box');
+            const adTemplate = document.getElementById('ad-template');
+            
+            // **IMPORTANT**: Set how many images to show before an ad
+            const ITEMS_BEFORE_AD = 4; // Har 4 image ke baad ek ad
+
+            try {
+                const response = await fetch('data/posts.txt');
+                const textData = await response.text();
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                
+                let allPosts = [];
+
+                lines.forEach((line, index) => {
+                    // Parse the line
+                    const cleanedLine = line.trim().slice(1, -1); // Remove { and }
+                    const parts = cleanedLine.split(',').map(part => part.trim());
+                    if (parts.length === 3) {
+                        const [title, imageUrl, targetUrl] = parts;
+                        allPosts.push({ title, imageUrl, targetUrl });
+                    }
+                });
+                
+                function renderPosts(postsToRender) {
+                    grid.innerHTML = ''; // Clear previous grid
+                    let postCounter = 0;
+                    postsToRender.forEach(post => {
+                        // Create Post Item
+                        const postLink = document.createElement('a');
+                        postLink.href = post.targetUrl;
+                        postLink.className = 'post-item';
+                        postLink.target = '_blank'; // Open in new tab
+                        postLink.setAttribute('data-title', post.title.toLowerCase());
+
+                        postLink.innerHTML = `
+                            <img src="${post.imageUrl}" alt="${post.title}" loading="lazy">
+                            <div class="play-overlay">
+                                <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+                            </div>
+                        `;
+                        grid.appendChild(postLink);
+                        postCounter++;
+                        
+                        // Insert Ad after every N items
+                        if (postCounter % ITEMS_BEFORE_AD === 0) {
+                            const adContainer = document.createElement('div');
+                            adContainer.className = 'ad-container';
+                            adContainer.innerHTML = adTemplate.innerHTML;
+                            grid.appendChild(adContainer);
+                        }
+                    });
+                }
+                
+                // Initial render
+                renderPosts(allPosts);
+
+                // Search functionality
+                searchBox.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const filteredPosts = allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                    renderPosts(filteredPosts);
+                });
+
+            } catch (error) {
+                grid.innerHTML = '<p>Error loading data. Please check the data/posts.txt file.</p>';
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
