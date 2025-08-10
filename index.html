@@ -21,8 +21,10 @@
         #post-grid {
             display: grid;
             gap: 15px;
+            /* Mobile: 2 columns */
             grid-template-columns: repeat(2, 1fr);
         }
+        /* Desktop: 4 columns */
         @media (min-width: 768px) {
             #post-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -52,6 +54,7 @@
             justify-content: center;
             align-items: center;
         }
+        /* *** This makes the ad fully responsive *** */
         .ad-container iframe {
             max-width: 100%;
             border: 0;
@@ -70,16 +73,16 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('post-grid');
             const searchBox = document.getElementById('search-box');
-            
-            // *** THE ONLY CHANGE NEEDED FOR DESKTOP LAYOUT ***
-            // Change this from 2 to 4
-            const ITEMS_BEFORE_AD = 4; 
-            
             let allPosts = [];
 
             function renderPosts(postsToRender) {
                 grid.innerHTML = '';
-                postsToRender.forEach(post => {
+                
+                // *** THE FINAL SMART AD LOGIC ***
+                // Check screen size to determine columns
+                const columns = window.innerWidth < 768 ? 2 : 4;
+                
+                postsToRender.forEach((post, index) => {
                     const postLink = document.createElement('a');
                     postLink.href = post.targetUrl;
                     postLink.className = 'post-item';
@@ -88,7 +91,8 @@
                     postLink.innerHTML = `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy"><div class="play-overlay"><svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg></div>`;
                     grid.appendChild(postLink);
                     
-                    if (grid.querySelectorAll('.post-item').length % ITEMS_BEFORE_AD === 0) {
+                    // Check if the current post is the last one in a row
+                    if ((index + 1) % columns === 0) {
                         const adContainer = document.createElement('div');
                         adContainer.className = 'ad-container';
                         const iframe = document.createElement('iframe');
@@ -109,14 +113,25 @@
                 const textData = await response.text();
                 const lines = textData.split('\n').filter(line => line.trim() !== '');
                 if (lines.length === 0) throw new Error("posts.txt is empty.");
-                
                 lines.forEach(line => {
                     const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) {
-                        allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                    }
+                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
                 });
+
+                // Initial render
                 renderPosts(allPosts);
+                
+                // Re-render on window resize to adjust ad placement
+                window.addEventListener('resize', () => {
+                    // This prevents running the code too often during resize
+                    clearTimeout(window.resizedFinished);
+                    window.resizedFinished = setTimeout(() => {
+                        const searchTerm = searchBox.value.toLowerCase();
+                        const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
+                        renderPosts(filteredPosts);
+                    }, 250);
+                });
+
             } catch (error) {
                 console.error('Final Error:', error);
                 grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
