@@ -143,45 +143,4 @@
         });
     </script>
 </body>
-</html>                    // 3. Create the ad container
-                    const adContainer = document.createElement('div');
-                    adContainer.className = 'ad-container';
-                    const iframe = document.createElement('iframe');
-                    iframe.scrolling = 'no';
-                    iframe.srcdoc = adHtmlContent;
-                    adContainer.appendChild(iframe);
-                    
-                    // 4. Add post and ad to the wrapper
-                    wrapper.appendChild(postLink);
-                    wrapper.appendChild(adContainer);
-
-                    // 5. Add the complete wrapper to the grid
-                    grid.appendChild(wrapper);
-                });
-            }
-
-            try {
-                const response = await fetch('data/posts.txt');
-                if (!response.ok) throw new Error(`Failed to fetch posts.txt.`);
-                const textData = await response.text();
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                if (lines.length === 0) throw new Error("posts.txt is empty.");
-                lines.forEach(line => {
-                    const parts = line.trim().slice(1, -1).split(',').map(p => p.trim());
-                    if (parts.length === 3) allPosts.push({ title: parts[0], imageUrl: parts[1], targetUrl: parts[2] });
-                });
-                renderPosts(allPosts);
-            } catch (error) {
-                console.error('Final Error:', error);
-                grid.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}</p>`;
-            }
-
-            searchBox.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredPosts = searchTerm === '' ? allPosts : allPosts.filter(post => post.title.toLowerCase().includes(searchTerm));
-                renderPosts(filteredPosts);
-            });
-        });
-    </script>
-</body>
 </html>
